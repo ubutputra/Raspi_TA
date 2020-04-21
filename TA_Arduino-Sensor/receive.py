@@ -2,13 +2,31 @@ import RPi.GPIO as GPIO
 from lib_nrf24 import NRF24
 import time
 import spidev
+import mysql.connector
+
+
+def insert_db(data):
+    mydb = mysql.connector.connect(
+      host="167.71.211.175",
+      user="ubut",
+      passwd="ubut31",
+      database="db_ta"
+    )
+    
+    mycursor = mydb.cursor()
+
+    sql = "INSERT INTO data_sensor (id_node,data_mq7,data_mq135,data_dht11_temperature,data_dht11_humidity,created_at) VALUES (%s, %s,%s,%s,%s,%s)"
+    val = data
+    print(val)
+    mycursor.execute(sql, val)
+    mydb.commit()
+    print(mycursor.rowcount, "record inserted.")    
+
+
 
 GPIO.setmode(GPIO.BCM)
-
-
-#address = [[0xe7, 0xe7, 0xe7, 0xe7, 0xe7], [C,O,B,A]]
-pipes = [[0xF0, 0xF0, 0xF0, 0xF0, 0xA1], [0xF0, 0xF0, 0xF0, 0xF0, 0xA2] ]
-pipes2 = [[0xE8, 0xE8, 0xF0, 0xF0, 0xE1], [0xF0, 0xF0, 0xF0, 0xF0, 0xE1] ]
+pipes = [[0xF0, 0xF0, 0xF0, 0xF0, 0xA1], [0xF0, 0xF0, 0xF0, 0xF0, 0xA2], [0xF0, 0xF0, 0xF0, 0xF0, 0xB4]]
+pipes2 = [[0xE8, 0xE8, 0xF0, 0xF0, 0xE1], [0xF0, 0xF0, 0xF0, 0xF0, 0xE1]]
 
 
 radio = NRF24(GPIO, spidev.SpiDev())
@@ -25,22 +43,20 @@ radio.enableAckPayload()
 
 radio.openReadingPipe(1, pipes[0])
 radio.openReadingPipe(2, pipes[1])
-
-#radio.openReadingPipe(1, address[1])
 radio.printDetails()
 
 radio.startListening()
 count = 0 
 while True:
-    #ackPL = [1]
     while not radio.available(0):
-        #print("timeout")
+        print("belum ada data yang masuk")
         time.sleep(1 / 1000)
     
     
 
     if (radio.available(pipes[0])):
         print("pipes 1 - node 1 >>>>>")
+        print(pipes[0])
     if (radio.available(pipes[1])):
         print("pipes 2 - node 2 >>>>>")        
         receivedMessage = []
@@ -53,20 +69,19 @@ while True:
         for n in receivedMessage:
             # Decode into standard unicode set
             if (n >= 32 and n <= 126):
-                #print(n)
                 string += chr(n)
         print(string)
         data = string.split("|")
-        print("list string : {}".format(data))
+        datetime = time.strftime('%Y-%m-%d %H:%M:%S')
         data = list(map(int,data))
+        data.append(datetime)
         print("list integer : {}".format(data))
+        insert_db(data)
 
-        
-        #radio.writeAckPayload(1, ackPL, len(ackPL))
-        #print("Loaded payload reply of {}".format(ackPL))
+
         count = count + 1
         print("received message decodes to : {}".format(string))
-        print("pesan ke {}".format(count))
-        print(time.strftime('%X %x %Z'))
+        print("data ke {}".format(count))
+        print(datetime)
         print("-->><<--")
     
