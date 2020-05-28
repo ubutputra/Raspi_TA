@@ -7,10 +7,10 @@ import mysql.connector
 
 def insert_db(data):
     mydb = mysql.connector.connect(
-      host="167.71.211.175",
+      host="128.199.246.173",
       user="ubut",
-      passwd="ubut31",
-      database="db_ta"
+      passwd="sukolilo10",
+      database="db_ta_ubut2016"
     )
     
     mycursor = mydb.cursor()
