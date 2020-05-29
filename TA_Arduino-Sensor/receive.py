@@ -15,7 +15,7 @@ def insert_db(data):
     
     mycursor = mydb.cursor()
 
-    sql = "INSERT INTO data_sensor (id_node,data_mq7,data_mq135,data_dht11_temperature,data_dht11_humidity,created_at) VALUES (%s, %s,%s,%s,%s,%s)"
+    sql = "INSERT INTO data_sensor (id_node,data_mq7,data_dht11_temperature,data_dht11_humidity,data_mq135,created_at) VALUES (%s, %s,%s,%s,%s,%s)"
     val = data
     #print(val)
     mycursor.execute(sql, val)
